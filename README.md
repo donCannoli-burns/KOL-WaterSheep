@@ -1,3 +1,5 @@
+> **Upstream first:** KOL-WaterSheep is a downstream KoL-focused fork of [Samrat Dutta's WaterSheep](https://github.com/SamratDuttaOfficial/WaterSheep). If you like or use KOL-WaterSheep, please **star the original WaterSheep project first**. The model and original WaterSheep work belong to its upstream author; this fork exists to explore KoL-specific adaptation.
+
 ![WaterSheep](assets/banner.svg)
 
 # ![](assets/logo.svg) WaterSheep
