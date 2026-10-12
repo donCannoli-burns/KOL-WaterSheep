@@ -1,0 +1,48 @@
+name: KoLmafia adapter smoke
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "watersheep/cli.py"
+      - "tests/selftest.py"
+      - ".github/workflows/kolmafia-adapter-smoke.yml"
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Compile adapter
+        run: python -m py_compile watersheep/cli.py
+
+      - name: Round-trip KoLmafia request path
+        run: |
+          python - <<'PY'
+          import json
+          from urllib.parse import quote
+          from watersheep.cli import parse_kolmafia_request_path
+
+          request = {
+              "state": {"evidence_contract": "don-combo-watersheep-evidence/v1", "minute": 123},
+              "questions": {"tile_class": {"type": "choice", "criteria": {"A": "rare", "B": "regular"}}},
+          }
+          path = "/v1/kolmafia?request=" + quote(json.dumps(request), safe="")
+          assert parse_kolmafia_request_path(path) == request
+
+          try:
+              parse_kolmafia_request_path("/v1/kolmafia")
+          except ValueError:
+              pass
+          else:
+              raise AssertionError("missing request must fail closed")
+
+          print("KOLMAFIA_ADAPTER_SMOKE=PASS")
+          PY
