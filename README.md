@@ -146,6 +146,16 @@ watersheep --model samratduttaofficial/WaterSheep --question "Which team should 
 
 `--serve` runs a local HTTP API on port 8766.
 
+### KoLmafia localhost compatibility route
+
+This downstream fork also exposes a read-only GET adapter for KoLmafia's native external `visit_url` / `visitUrl` client:
+
+```text
+GET /v1/kolmafia?request=<urlencoded-json>
+```
+
+The `request` value is the same WaterSheep `ask()` object accepted by `POST /v1/systemone`. The route exists only to bridge KoLmafia's query/form-oriented HTTP surface to the existing JSON decision API. It does not add game authority, cookies, credentials, or remote binding; the server remains bound to `127.0.0.1`.
+
 ## Evaluation
 
 | Evaluation | Accuracy | ECE |
