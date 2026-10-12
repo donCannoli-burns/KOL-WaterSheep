@@ -14,12 +14,28 @@ import time
 
 def serve(ws, port: int) -> None:
     from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+    from urllib.parse import parse_qs, urlparse
     import threading
     lock = threading.Lock()
 
     class H(BaseHTTPRequestHandler):
         def log_message(self, *a):
             pass
+
+        def do_GET(self):
+            parsed = urlparse(self.path)
+            if parsed.path.rstrip("/") != "/v1/kolmafia":
+                return self._send(404, {"error": "GET /v1/kolmafia?request=<json>"})
+            try:
+                values = parse_qs(parsed.query, keep_blank_values=True)
+                raw = (values.get("request") or [""])[0]
+                if not raw:
+                    raise ValueError("missing request query parameter")
+                req = json.loads(raw)
+                with lock:
+                    self._send(200, ws.ask(req))
+            except Exception as e:
+                self._send(400, {"error": str(e)})
 
         def do_POST(self):
             if self.path.rstrip("/") not in ("/v1/decisions", "/v1/systemone"):
