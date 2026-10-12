@@ -28,6 +28,17 @@ def check(cond, msg):
 
 def unit_tests():
     print("\n== unit tests")
+    from urllib.parse import quote
+    from watersheep.cli import parse_kolmafia_request_path
+    kol_req = {"state": {"minute": 123}, "questions": {"x": {"type": "noul", "instructions": "ok?"}}}
+    encoded = quote(__import__("json").dumps(kol_req), safe="")
+    check(parse_kolmafia_request_path("/v1/kolmafia?request=" + encoded) == kol_req,
+          "KoLmafia query adapter round-trips a WaterSheep request")
+    try:
+        parse_kolmafia_request_path("/v1/kolmafia")
+        check(False, "KoLmafia query adapter rejects missing request")
+    except ValueError:
+        check(True, "KoLmafia query adapter rejects missing request")
     from watersheep.data import sources as S
     from watersheep.synth.llm import label_probs, loose_json
     from watersheep.data.schema import validate
