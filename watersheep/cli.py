@@ -12,9 +12,24 @@ import sys
 import time
 
 
+def parse_kolmafia_request_path(path: str) -> dict:
+    """Decode the read-only KoLmafia GET adapter request."""
+    from urllib.parse import parse_qs, urlparse
+    parsed = urlparse(path)
+    if parsed.path.rstrip("/") != "/v1/kolmafia":
+        raise ValueError("not a KoLmafia compatibility path")
+    values = parse_qs(parsed.query, keep_blank_values=True)
+    raw = (values.get("request") or [""])[0]
+    if not raw:
+        raise ValueError("missing request query parameter")
+    value = json.loads(raw)
+    if not isinstance(value, dict):
+        raise ValueError("request must decode to a JSON object")
+    return value
+
+
 def serve(ws, port: int) -> None:
     from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-    from urllib.parse import parse_qs, urlparse
     import threading
     lock = threading.Lock()
 
@@ -23,15 +38,10 @@ def serve(ws, port: int) -> None:
             pass
 
         def do_GET(self):
-            parsed = urlparse(self.path)
-            if parsed.path.rstrip("/") != "/v1/kolmafia":
+            if self.path.split("?", 1)[0].rstrip("/") != "/v1/kolmafia":
                 return self._send(404, {"error": "GET /v1/kolmafia?request=<json>"})
             try:
-                values = parse_qs(parsed.query, keep_blank_values=True)
-                raw = (values.get("request") or [""])[0]
-                if not raw:
-                    raise ValueError("missing request query parameter")
-                req = json.loads(raw)
+                req = parse_kolmafia_request_path(self.path)
                 with lock:
                     self._send(200, ws.ask(req))
             except Exception as e:
