@@ -148,6 +148,14 @@ watersheep --model samratduttaofficial/WaterSheep --question "Which team should 
 
 ### KoLmafia localhost compatibility route
 
+Install/update this downstream fork for the KoLmafia adapter:
+
+```bash
+pip install -U git+https://github.com/donCannoli-burns/KOL-WaterSheep
+watersheep --model samratduttaofficial/WaterSheep --serve
+```
+
+
 This downstream fork also exposes a read-only GET adapter for KoLmafia's native external `visit_url` / `visitUrl` client:
 
 ```text
